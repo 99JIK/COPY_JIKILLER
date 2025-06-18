@@ -35,7 +35,7 @@
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/99JIK/COPY_JIKILLER.git](https://github.com/99JIK/COPY_JIKILLER.git)
+    git clone https://github.com/99JIK/COPY_JIKILLER.git
     cd COPY_JIKILLER
     ```
 2.  **Install dependencies:**
@@ -55,7 +55,7 @@
 
 | Version | Date | Key Changes | Download |
 | :--- | :--- | :--- | :--- |
-| **v1.0.0** | 2025-MM-DD | - Initial public release.<br>- Implemented core plagiarism detection features.<br>- Added multi-language and multi-theme support. | [v1.0.0](https://github.com/99JIK/COPY_JIKILLER/releases/tag/v1.0.0) |
+| **v1.0.0** | 2025-06-19 | - Initial public release.<br>- Implemented core plagiarism detection features.<br>- Added multi-language and multi-theme support. | [v1.0.0](https://github.com/99JIK/COPY_JIKILLER/releases/tag/v1.0.0) |
 | | | | |
 
 *You can find all versions on the [**Releases**](https://github.com/99JIK/COPY_JIKILLER/releases) page.*
