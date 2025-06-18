@@ -1,19 +1,25 @@
-![COPY_JIKILLER Banner](../resource/copy_jikiller.png)
+# 📑 COPY_JIKILLER - Detailed User Guide
 
 > A Powerful, GUI-based Plagiarism Checker for Programming Assignments.
-
-**COPY_JIKILLER** is a robust desktop application designed to efficiently check for plagiarism in students' code submissions. Going beyond simple text comparison, it utilizes advanced analysis based on [AST (Abstract Syntax Tree)](#-what-is-ast-analysis) to precisely detect various types of plagiarism, including changes in variable names, code order, and more.
 
 ---
 
 ## Table of Contents
 
-* [Key Features](#-key-features)
-* [Detailed User Guide](#-detailed-user-guide)
-* [What is AST Analysis?](#-what-is-ast-analysis)
-* [Installation & Requirements](#️-installation--requirements)
-* [Building and Distribution](#-building-and-distribution)
-* [License](#-license)
+1. [Key Features](#-key-features)
+2. [Detailed User Guide](#-detailed-user-guide)
+   - [Folder Selection & Basic Setup](#1--folder-selection--basic-setup)
+   - [Analysis Mode & Threshold](#2--analysis-mode--threshold)
+   - [Running & Stopping the Scan](#3--running--stopping-the-scan)
+   - [Viewing & Analyzing Results](#4--viewing--analyzing-results)
+   - [Exporting & Saving Settings](#5--exporting--saving-settings)
+3. [What is AST Analysis?](#-what-is-ast-analysis)
+4. [Installation & Requirements](#️-installation--requirements)
+5. [Building and Distribution](#-building-and-distribution)
+   - [Build the Application](#1-build-the-application)
+   - [Distribute the Application](#2-distribute-the-application)
+   - [Troubleshooting](#3--troubleshooting-icon-not-appearing-on-windows)
+6. [License](#-license)
 
 ---
 
@@ -93,6 +99,19 @@ Instead of viewing code as a simple sequence of characters, an AST represents it
 
 ---
 
+## 🛠️ Installation & Requirements
+### 1. Install Libraries
+
+To install all required libraries at once, navigate to the project's root directory in your terminal and run the following command:
+```bash
+pip install -r requirements.txt
+```
+### 2. Additional Setup for C/C++ AST Analysis
+To fully use the `C/C++ (AST)` analysis mode, you must have the **LLVM/Clang compiler** installed on your system.
+1.  **Install LLVM**: Go to the [LLVM Official Download Page](https://github.com/llvm/llvm-project/releases) and run the installer for your OS.
+2.  **IMPORTANT (Windows)**: During installation, make sure to **check the box** for **"Add LLVM to the system PATH for all users"**.
+
+---
 ## 📦 Building and Distribution
 You can build the project into a single executable file for easy distribution.
 
@@ -126,7 +145,6 @@ pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_ji
 ```bash
 pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_jikiller.ico" --add-data "resource:resource" --add-data "guide:guide" --add-binary "/path/to/your/libclang.so:." main.py
 ```
-
 ### 2. Distribute the Application
 
 1.  After a successful build, a single executable file named **`COPY_JIKILLER.exe`** (or `.app` on macOS) will be created inside the `dist` folder.
@@ -134,32 +152,26 @@ pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_ji
 3.  Users can run the program by double-clicking the received file, and all icons and images will be displayed correctly.
 
 ### 3. ⚠️ Troubleshooting: Icon Not Appearing on Windows
-
 If the built `.exe` file's icon appears as the default icon in the taskbar or File Explorer, it's most likely due to Windows' **Icon Cache**. Follow these steps to reset it:
 
 1.  **Open Command Prompt as Administrator**:
     * Press `Win` key, type `cmd`, right-click on **'Command Prompt'**, and select **[Run as administrator]**.
-
 2.  **Terminate Explorer**:
-    * In the admin command prompt, type the following command and press `Enter`. (Your desktop and taskbar will temporarily disappear, which is normal).
+    * In the admin command prompt, type the following command and press `Enter`.
     ```bash
     taskkill /f /im explorer.exe
     ```
-
 3.  **Delete Icon Cache Files**:
     * Now, type the following two commands, pressing `Enter` after each one.
     ```bash
     cd %userprofile%\AppData\Local\Microsoft\Windows\Explorer
     del iconcache* /a
     ```
-
 4.  **Restart Explorer**:
     * Finally, type the command below to bring back your desktop and taskbar.
     ```bash
     explorer.exe
     ```
-5.  Navigate to the `dist` folder and check if the `.exe` file's icon is now displayed correctly.
-
 ---
 ## 📜 License
 This project is licensed under the [MIT License](../LICENSE).
