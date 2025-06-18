@@ -1,0 +1,10 @@
+{
+    "language": "KR",
+    "theme": "litera",
+    "extensions": {
+        ".py": true,
+        ".c": true,
+        ".cpp": true,
+        ".java": true
+    }
+}
