@@ -10,10 +10,10 @@ import csv
 import sys
 
 # --- Local Module Imports ---
-from utils import Taskbar, load_settings, save_settings, is_system_dark_theme
-from logic import process_content, CLANG_AVAILABLE, JAVALANG_AVAILABLE
-from ui import DiffWindow, InfoWindow, CustomMessagebox, AddExtensionDialog, ManageExtensionsDialog
-from i18n import LANGUAGES
+from .utils import Taskbar, load_settings, save_settings, is_system_dark_theme
+from .logic import process_content, CLANG_AVAILABLE, JAVALANG_AVAILABLE
+from .ui import DiffWindow, InfoWindow, CustomMessagebox, AddExtensionDialog, ManageExtensionsDialog
+from .i18n import LANGUAGES
 
 class PlagiarismCheckerApp:
     def __init__(self, root):
