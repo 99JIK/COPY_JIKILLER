@@ -1,6 +1,6 @@
 {
-    "language": "KR",
-    "theme": "litera",
+    "language": "EN",
+    "theme": "superhero",
     "extensions": {
         ".py": true,
         ".c": true,

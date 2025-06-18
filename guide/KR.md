@@ -12,7 +12,7 @@
 * [상세 사용 가이드](#-상세-사용-가이드)
 * [AST 분석이란?](#-ast-분석이란-what-is-ast)
 * [설치 및 요구사항](#️-설치-및-요구사항)
-* [실행 파일 빌드하기](#-실행-파일-빌드하기)
+* [실행 파일 빌드 및 배포](#-실행-파일-빌드-및-배포)
 * [라이선스](#-라이선스)
 
 ---
@@ -110,37 +110,73 @@ pip install -r requirements.txt
 2.  **중요 (Windows)**: 설치 과정 중 **"Add LLVM to the system PATH for all users"** 옵션을 **반드시 체크**해주세요.
 
 ---
-## 📦 실행 파일 빌드하기
+## 📦 실행 파일 빌드 및 배포
 
-다른 사람에게 쉽게 배포할 수 있는 단일 실행 파일(`.exe`, `.app`)을 만들 수 있습니다.
+다른 사람에게 쉽게 배포할 수 있도록, 프로젝트를 단일 실행 파일(`.exe`, `.app`)으로 빌드할 수 있습니다.
+
+### 1. 빌드하기
 
 1.  **PyInstaller 설치**: `pip install pyinstaller`
 2.  **빌드 명령어 실행**:
     * 터미널에서 프로젝트 최상위 폴더로 이동한 뒤, 자신의 운영체제에 맞는 명령어를 실행합니다.
-    * **`--add-binary`** 옵션은 C/C++ AST 분석 기능을 배포 파일에 포함시키기 위해 필요합니다.
+    * **`--add-data`**: 프로그램 실행에 필요한 모든 리소스(아이콘, 이미지, 가이드 문서 등)를 `.exe` 파일 안에 함께 포함시키는 매우 중요한 옵션입니다.
+    * **`--add-binary`**: `libclang` 라이브러리를 포함시켜, 다른 PC에서도 C/C++ AST 분석이 가능하게 합니다.
 
 <br>
 
 #### 🪟 **Windows**
 * `libclang.dll` 파일의 경로를 확인합니다. (보통 `C:\Program Files\LLVM\bin\libclang.dll`)
-* 아래 명령어에서 `C:\Program Files\LLVM\bin\libclang.dll` 부분을 실제 경로로 수정하여 실행합니다.
+* 아래 명령어에서 경로를 실제 `libclang.dll` 경로로 수정하여 실행합니다.
 ```bash
 pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_jikiller.ico" --add-data "resource;resource" --add-data "guide;guide" --add-binary "C:\Program Files\LLVM\bin\libclang.dll;." main.py
 ```
 
 #### 🍏 **macOS**
 * `libclang.dylib` 파일의 경로를 확인합니다. (예: `brew install llvm`으로 설치 시 `/opt/homebrew/lib/libclang.dylib`)
-* 아래 명령어에서 `/path/to/your/libclang.dylib` 부분을 실제 경로로 수정하여 실행합니다.
+* 아래 명령어에서 경로를 실제 `libclang.dylib` 경로로 수정하여 실행합니다.
 ```bash
 pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_jikiller.ico" --add-data "resource:resource" --add-data "guide:guide" --add-binary "/path/to/your/libclang.dylib:." main.py
 ```
 
 #### 🐧 **Linux**
 * `libclang.so` 파일의 경로를 확인합니다. (예: `/usr/lib/x86_64-linux-gnu/libclang.so.1`)
-* 아래 명령어에서 `/path/to/your/libclang.so` 부분을 실제 경로로 수정하여 실행합니다.
+* 아래 명령어에서 경로를 실제 `libclang.so` 경로로 수정하여 실행합니다.
 ```bash
 pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_jikiller.ico" --add-data "resource:resource" --add-data "guide:guide" --add-binary "/path/to/your/libclang.so:." main.py
 ```
+
+### 2. 배포하기
+
+1.  빌드가 성공적으로 완료되면 `dist` 폴더 안에 **`COPY_JIKILLER.exe`** (또는 macOS의 경우 `.app`) 라는 **단일 파일 하나만** 생성됩니다.
+2.  이제 다른 사용자에게 프로그램을 전달할 때는, **이 `.exe` 파일 하나만** 보내주시면 됩니다.
+3.  사용자는 전달받은 `.exe` 파일을 더블클릭하여 바로 실행할 수 있습니다.
+
+### 3. ⚠️ 문제 해결: 아이콘이 적용되지 않는 경우
+
+빌드된 `.exe` 파일의 아이콘이 작업 표시줄이나 파일 탐색기에서 기본 아이콘으로 보이는 경우, 이는 대부분 Windows의 **아이콘 캐시(Icon Cache)** 문제입니다. 아래 단계에 따라 캐시를 초기화해주세요.
+
+1.  **명령 프롬프트(관리자) 실행**:
+    * `Win` 키를 누르고 `cmd`를 입력한 뒤, **'명령 프롬프트'** 앱에 마우스 오른쪽 버튼을 클릭하여 **[관리자 권한으로 실행]**을 선택합니다.
+
+2.  **파일 탐색기(Explorer) 종료**:
+    * 관리자 명령 프롬프트 창에 아래 명령어를 입력하고 `Enter` 키를 누릅니다. (바탕화면과 작업 표시줄이 일시적으로 사라집니다.)
+    ```bash
+    taskkill /f /im explorer.exe
+    ```
+
+3.  **아이콘 캐시 파일 삭제**:
+    * 이제, 아래 두 개의 명령어를 차례대로 입력하고 `Enter` 키를 누릅니다.
+    ```bash
+    cd %userprofile%\AppData\Local\Microsoft\Windows\Explorer
+    del iconcache* /a
+    ```
+
+4.  **파일 탐색기(Explorer) 재시작**:
+    * 마지막으로, 아래 명령어를 입력하여 바탕화면과 작업 표시줄을 다시 불러옵니다.
+    ```bash
+    explorer.exe
+    ```
+5.  `dist` 폴더로 이동하여 `.exe` 파일의 아이콘이 정상적으로 표시되는지 확인합니다.
 
 ---
 ## 📜 라이선스

@@ -7,7 +7,8 @@ import sys
 try:
     import clang.cindex
     # Import and run configuration logic from utils
-    from utils import configure_clang
+    # This needs to be relative for the package structure to work
+    from .utils import configure_clang
     CLANG_AVAILABLE = configure_clang(clang)
 except ImportError:
     CLANG_AVAILABLE = False

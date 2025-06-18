@@ -12,7 +12,7 @@
 * [Detailed User Guide](#-detailed-user-guide)
 * [What is AST Analysis?](#-what-is-ast-analysis)
 * [Installation & Requirements](#️-installation--requirements)
-* [Building from Source](#-building-from-source)
+* [Building and Distribution](#-building-and-distribution)
 * [License](#-license)
 
 ---
@@ -93,24 +93,15 @@ Instead of viewing code as a simple sequence of characters, an AST represents it
 
 ---
 
-## 🛠️ Installation & Requirements
-### 1. Install Libraries
+## 📦 Building and Distribution
+You can build the project into a single executable file for easy distribution.
 
-To install all required libraries at once, navigate to the project's root directory in your terminal and run the following command:
-```bash
-pip install -r requirements.txt
-```
-### 2. Additional Setup for C/C++ AST Analysis
-To fully use the `C/C++ (AST)` analysis mode, you must have the **LLVM/Clang compiler** installed on your system.
-1.  **Install LLVM**: Go to the [LLVM Official Download Page](https://github.com/llvm/llvm-project/releases) and run the installer for your OS.
-2.  **IMPORTANT (Windows)**: During installation, make sure to **check the box** for **"Add LLVM to the system PATH for all users"**.
+### 1. Build the Application
 
----
-## 📦 Building from Source
-You can create a standalone executable (`.exe`, `.app`) for easy distribution.
 1.  **Install PyInstaller**: `pip install pyinstaller`
-2.  **Run Build Command**:
+2.  **Run the Build Command**:
     * Navigate to the project's root directory in your terminal and run the command appropriate for your OS.
+    * The **`--add-data`** option is crucial for bundling all necessary resources (icons, images, guides) into the `.exe` file.
     * The **`--add-binary`** option is required to bundle the C/C++ AST analysis feature.
 
 <br>
@@ -135,6 +126,40 @@ pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_ji
 ```bash
 pyinstaller --onefile --windowed --name "COPY_JIKILLER" --icon="resource/copy_jikiller.ico" --add-data "resource:resource" --add-data "guide:guide" --add-binary "/path/to/your/libclang.so:." main.py
 ```
+
+### 2. Distribute the Application
+
+1.  After a successful build, a single executable file named **`COPY_JIKILLER.exe`** (or `.app` on macOS) will be created inside the `dist` folder.
+2.  To share the program with others, **you only need to send this single `.exe` file**.
+3.  Users can run the program by double-clicking the received file, and all icons and images will be displayed correctly.
+
+### 3. ⚠️ Troubleshooting: Icon Not Appearing on Windows
+
+If the built `.exe` file's icon appears as the default icon in the taskbar or File Explorer, it's most likely due to Windows' **Icon Cache**. Follow these steps to reset it:
+
+1.  **Open Command Prompt as Administrator**:
+    * Press `Win` key, type `cmd`, right-click on **'Command Prompt'**, and select **[Run as administrator]**.
+
+2.  **Terminate Explorer**:
+    * In the admin command prompt, type the following command and press `Enter`. (Your desktop and taskbar will temporarily disappear, which is normal).
+    ```bash
+    taskkill /f /im explorer.exe
+    ```
+
+3.  **Delete Icon Cache Files**:
+    * Now, type the following two commands, pressing `Enter` after each one.
+    ```bash
+    cd %userprofile%\AppData\Local\Microsoft\Windows\Explorer
+    del iconcache* /a
+    ```
+
+4.  **Restart Explorer**:
+    * Finally, type the command below to bring back your desktop and taskbar.
+    ```bash
+    explorer.exe
+    ```
+5.  Navigate to the `dist` folder and check if the `.exe` file's icon is now displayed correctly.
+
 ---
 ## 📜 License
 This project is licensed under the [MIT License](../LICENSE).

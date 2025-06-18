@@ -9,8 +9,8 @@ import time
 import csv
 import sys
 
-# --- Local Module Imports ---
-from .utils import Taskbar, load_settings, save_settings, is_system_dark_theme
+# --- Local Module Imports (Relative Path) ---
+from .utils import Taskbar, load_settings, save_settings, resource_path
 from .logic import process_content, CLANG_AVAILABLE, JAVALANG_AVAILABLE
 from .ui import DiffWindow, InfoWindow, CustomMessagebox, AddExtensionDialog, ManageExtensionsDialog
 from .i18n import LANGUAGES
@@ -18,11 +18,12 @@ from .i18n import LANGUAGES
 class PlagiarismCheckerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("🔪 COPY_JIKILLER") # Name Change
+        self.root.title("🔪COPY_JIKILLER")
         self.root.geometry("1050x800") 
         
         try:
-            self.root.iconbitmap(os.path.join('resource', 'copy_jikiller.ico')) # Name Change
+            icon_path = resource_path(os.path.join('resource', 'copy_jikiller.ico'))
+            self.root.iconbitmap(icon_path)
         except tk.TclError:
             print("Warning: Icon file ('resource/copy_jikiller.ico') not found or corrupted.")
             
@@ -75,8 +76,8 @@ class PlagiarismCheckerApp:
         
         title_subframe = ttk.Frame(header_frame)
         title_subframe.grid(row=0, column=0, sticky="w")
-        ttk.Label(title_subframe, text="🔪 COPY_JIKILLER", font=(font, 24, "bold")).pack(side=LEFT, anchor="center") # Name Change
-        self.info_button = ttk.Button(title_subframe, text="?", command=self.show_info_window, bootstyle="link", padding=(2,0)) # Style Change
+        ttk.Label(title_subframe, text="🔪COPY_JIKILLER", font=(font, 24, "bold")).pack(side=LEFT, anchor="center")
+        self.info_button = ttk.Button(title_subframe, text="?", command=self.show_info_window, bootstyle="link", padding=(2,0))
         self.info_button.pack(side=LEFT, padx=10, pady=(5,0), anchor="center")
         
         settings_subframe = ttk.Frame(header_frame)
@@ -115,6 +116,8 @@ class PlagiarismCheckerApp:
         self.analysis_mode_display_name = tk.StringVar()
         self.mode_selector = ttk.Combobox(analysis_frame, textvariable=self.analysis_mode_display_name, state="readonly")
         self.mode_selector.pack(fill=X, pady=(0, 10))
+        self.mode_selector.bind("<<ComboboxSelected>>", self.on_analysis_mode_selected)
+        self.mode_selector.bind("<FocusIn>", self._store_previous_mode)
         self.recursive_var = tk.BooleanVar(value=True)
         self.recursive_check = ttk.Checkbutton(analysis_frame, variable=self.recursive_var)
         self.recursive_check.pack(fill=X, anchor="w")
@@ -206,10 +209,17 @@ class PlagiarismCheckerApp:
         self.theme_display_name.set(self.theme_name_map.get(current_theme_key, "Dark"))
         
         self.analysis_map = self.texts["analysis_mode_display_names"]
-        available_modes = ["text", "python"]
-        if CLANG_AVAILABLE: available_modes.append("c")
-        if JAVALANG_AVAILABLE: available_modes.append("java")
-        display_options = [self.analysis_map[key] for key in available_modes]
+        display_options = []
+        unavailable_suffix = self.texts.get("unavailable_suffix", " (N/A)")
+        for key in ["text", "python", "c", "java"]:
+            if key in self.analysis_map:
+                name = self.analysis_map[key]
+                if key == 'c' and not CLANG_AVAILABLE:
+                    display_options.append(name + unavailable_suffix)
+                elif key == 'java' and not JAVALANG_AVAILABLE:
+                    display_options.append(name + unavailable_suffix)
+                else:
+                    display_options.append(name)
         self.mode_selector["values"] = display_options
         
         current_internal_mode = self.get_internal_analysis_mode()
@@ -297,6 +307,21 @@ class PlagiarismCheckerApp:
     def _on_toggle_extension(self):
         self.all_extensions_var.set(all(var.get() for var in self.extension_vars.values()))
 
+    def _store_previous_mode(self, event):
+        self.previous_analysis_mode = self.analysis_mode_display_name.get()
+
+    def on_analysis_mode_selected(self, event):
+        selected_display = self.analysis_mode_display_name.get()
+        unavailable_suffix = self.texts.get("unavailable_suffix", " (N/A)")
+        if selected_display.endswith(unavailable_suffix):
+            original_display_name = selected_display.replace(unavailable_suffix, "")
+            internal_mode = next((k for k, v in self.analysis_map.items() if v == original_display_name), None)
+            
+            msg_key = "dialog_clang_unavailable" if internal_mode == 'c' else "dialog_javalang_unavailable"
+            CustomMessagebox(self.root, self.texts, self.texts.get(msg_key), title_key="dialog_warning_title", bootstyle="warning")
+            
+            self.analysis_mode_display_name.set(self.previous_analysis_mode)
+    
     def export_to_csv(self):
         title = self.texts.get("dialog_export_csv", "Export Results")
         filepath = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV", "*.csv")], title=title)

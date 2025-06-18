@@ -2,6 +2,16 @@ import sys
 import os
 import json
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 if sys.platform == "win32":
     import ctypes
     from ctypes import wintypes
@@ -24,18 +34,12 @@ if sys.platform == "win32":
 
         def setProgressState(self, state):
             if self.taskbar:
-                try:
-                    hwnd = self.root.winfo_id()
-                    self.taskbar.SetProgressState(hwnd, state)
-                except Exception as e:
-                    print(f"Failed to set taskbar state: {e}")
+                try: self.taskbar.SetProgressState(self.root.winfo_id(), state)
+                except Exception as e: print(f"Failed to set taskbar state: {e}")
         def setProgressValue(self, current, total):
             if self.taskbar and total > 0:
-                try:
-                    hwnd = self.root.winfo_id()
-                    self.taskbar.SetProgressValue(hwnd, current, total)
-                except Exception as e:
-                    print(f"Failed to set taskbar value: {e}")
+                try: self.taskbar.SetProgressValue(self.root.winfo_id(), current, total)
+                except Exception as e: print(f"Failed to set taskbar value: {e}")
 
     def is_system_dark_theme():
         """Checks if the Windows system is using a dark theme."""
@@ -44,7 +48,7 @@ if sys.platform == "win32":
             value, _ = winreg.QueryValueEx(key, 'AppsUseLightTheme')
             return value == 0
         except Exception:
-            return True # Default to dark mode on error
+            return True 
 else:
     # Dummy class for non-Windows systems
     class Taskbar:
@@ -52,7 +56,7 @@ else:
         def setProgressState(self, state): pass
         def setProgressValue(self, current, total): pass
     def is_system_dark_theme():
-        return True # Default to dark mode for non-Windows
+        return True 
 
 SETTINGS_FILE = "settings.json"
 
@@ -61,7 +65,7 @@ def load_settings():
     default_settings = {
         "language": "EN", 
         "theme": "superhero", 
-        "extensions": {".py": True, ".c": True, ".cpp": True, ".java": True}
+        "extensions": {".py": True, ".c": True, ".cpp": True, ".java": True, ".*": True}
     }
     try:
         with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
@@ -85,29 +89,17 @@ def save_settings(settings):
         print(f"Error saving settings: {e}")
 
 def find_libclang_path():
-    """Finds the path to libclang in both development and bundled (PyInstaller) environments."""
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-        # Path when running as a PyInstaller bundle
         bundle_dir = sys._MEIPASS
         lib_path = os.path.join(bundle_dir, 'libclang.dll')
-        if os.path.exists(lib_path):
-            return lib_path
-            
-    # Path for standard LLVM installation on Windows
+        if os.path.exists(lib_path): return lib_path
     llvm_path = r'C:\Program Files\LLVM\bin\libclang.dll'
-    if os.path.exists(llvm_path):
-        return llvm_path
-        
-    # Fallback for other systems (macOS, Linux) by checking PATH
+    if os.path.exists(llvm_path): return llvm_path
     from shutil import which
-    if which('clang'):
-        # This is not a direct path to libclang, but clang library might find it
-        return which('clang')
-        
+    if which('clang'): return which('clang')
     return None
 
 def configure_clang(clang_module):
-    """Configures the clang library with the path to libclang."""
     if clang_module and not clang_module.cindex.Config.loaded:
         libclang_path = find_libclang_path()
         if libclang_path:

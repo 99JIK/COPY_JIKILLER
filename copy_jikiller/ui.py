@@ -15,19 +15,39 @@ except ImportError:
     print("Warning: Pillow library is not installed. Banner image resizing will be disabled.")
     print("You can install it by running: pip install Pillow")
 
+# --- Local Module Imports ---
+# This structure assumes ui.py is inside the 'copy_jikiller' package
+try:
+    from .utils import resource_path
+except ImportError:
+    # Fallback for running the file directly (if needed for testing)
+    def resource_path(relative_path):
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
-class DiffWindow(tk.Toplevel):
+
+class BaseToplevel(tk.Toplevel):
+    """A base class for all Toplevel windows to handle common setup."""
+    def __init__(self, parent, title=""):
+        super().__init__(parent)
+        self.title(title)
+        self.transient(parent)
+        self.grab_set()
+        try:
+            icon_path = resource_path(os.path.join('resource', 'copy_jikiller.ico'))
+            self.iconbitmap(icon_path)
+        except tk.TclError:
+            print(f"Warning: Icon for window '{title}' not found.")
+
+class DiffWindow(BaseToplevel):
     """A Toplevel window to display a side-by-side comparison of two files."""
     def __init__(self, parent, file1_path, file2_path, file1_content, file2_content):
-        super().__init__(parent)
-        self.title(f"Compare: {os.path.basename(file1_path)} vs {os.path.basename(file2_path)}")
+        super().__init__(parent, f"Compare: {os.path.basename(file1_path)} vs {os.path.basename(file2_path)}")
         self.geometry("1200x800")
         
-        try:
-            self.iconbitmap(os.path.join('resource', 'copy_jikiller.ico'))
-        except tk.TclError:
-            print("Warning: Could not find icon for DiffWindow: resource/copy_jikiller.ico")
-
         main_frame = ttk.Frame(self, padding=10)
         main_frame.pack(fill=BOTH, expand=YES)
         main_frame.rowconfigure(1, weight=1)
@@ -81,7 +101,7 @@ class DiffWindow(tk.Toplevel):
             
         self.text1.yview_scroll(delta, "units")
         self.text2.yview_scroll(delta, "units")
-        return "break" # Prevents the event from propagating further.
+        return "break" 
 
     def highlight_diff(self, content1, content2, match_bg_color):
         # Highlight matching lines in both text widgets.
@@ -97,20 +117,13 @@ class DiffWindow(tk.Toplevel):
                 for j in range(j1, j2):
                     self.text2.tag_add('match', f"{j + 1}.0", f"{j + 1}.end")
 
-class InfoWindow(tk.Toplevel):
-    def __init__(self, parent, texts):
-        super().__init__(parent)
-        self.title(texts.get("info_title", "Info"))
-        self.geometry("700x650")
-        self.transient(parent)
-        self.grab_set()
 
-        try:
-            self.iconbitmap(os.path.join('resource', 'copy_jikiller.ico'))
-        except tk.TclError:
-            print("Warning: Info window icon not found: resource/copy_jikiller.ico")
+class InfoWindow(BaseToplevel):
+    """A Toplevel window to display information about the application."""
+    def __init__(self, parent, texts):
+        super().__init__(parent, texts.get("info_title", "Info"))
+        self.geometry("700x650")
         
-        # --- Manually create a scrollable frame ---
         main_frame = ttk.Frame(self)
         main_frame.pack(fill=BOTH, expand=YES)
         
@@ -120,45 +133,44 @@ class InfoWindow(tk.Toplevel):
         self.content_frame = ttk.Frame(self.canvas, padding=25)
         self.content_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         
-        self.canvas.create_window((0, 0), window=self.content_frame, anchor="nw")
+        self.canvas_frame_id = self.canvas.create_window((0, 0), window=self.content_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=scrollbar.set)
         
         self.canvas.pack(side=LEFT, fill=BOTH, expand=YES)
         scrollbar.pack(side=RIGHT, fill=Y)
 
-        # Bind mouse wheel event to the entire canvas and its children for intuitive scrolling
-        self.canvas.bind_all("<MouseWheel>", self._on_mouse_wheel, add="+")
+        # BUG FIX: Bind mouse wheel to the Toplevel window itself, not the canvas.
+        self.bind_all("<MouseWheel>", self._on_mouse_wheel, add="+")
         self.bind("<Destroy>", self._on_destroy)
 
         self._populate_content(texts)
-        self.bind("<Configure>", self._on_resize_banner) 
+        self.canvas.bind("<Configure>", self._on_resize) 
 
     def _populate_content(self, texts):
         self.banner_label = ttk.Label(self.content_frame)
         self.banner_label.pack(pady=(0, 25), anchor="center")
         self.after(50, self._load_and_resize_banner)
 
-        # --- BUG FIX: Use texts dictionary for all content ---
-        # How to Use section
-        ttk.Label(self.content_frame, text=texts.get("info_usage_title", "How to Use"), font="-size 14 -weight bold").pack(fill=X, pady=(0, 10), anchor="w")
-        ttk.Label(self.content_frame, text=texts.get("info_usage_text", ""), justify=LEFT, wraplength=600).pack(fill=X, anchor="w", pady=(0, 25))
+        inner_content_frame = ttk.Frame(self.content_frame, padding=(25,0))
+        inner_content_frame.pack(fill=X)
+
+        ttk.Label(inner_content_frame, text=texts.get("info_usage_title", "How to Use"), font="-size 14 -weight bold").pack(fill=X, pady=(0, 10), anchor="w")
+        ttk.Label(inner_content_frame, text=texts.get("info_usage_text", ""), justify=LEFT, wraplength=600).pack(fill=X, anchor="w", pady=(0, 25))
         
-        # What is AST section
-        ttk.Label(self.content_frame, text=texts.get("info_ast_title", "What is AST?"), font="-size 14 -weight bold").pack(fill=X, pady=(0, 10), anchor="w")
-        ttk.Label(self.content_frame, text=texts.get("info_ast_text", ""), justify=LEFT, wraplength=600).pack(fill=X, anchor="w", pady=(0, 25))
+        ttk.Label(inner_content_frame, text=texts.get("info_ast_title", "What is AST?"), font="-size 14 -weight bold").pack(fill=X, pady=(0, 10), anchor="w")
+        ttk.Label(inner_content_frame, text=texts.get("info_ast_text", ""), justify=LEFT, wraplength=600).pack(fill=X, anchor="w", pady=(0, 25))
         
-        # Information section
-        ttk.Label(self.content_frame, text=texts.get("info_dev_title", "Information"), font="-size 14 -weight bold").pack(fill=X, pady=(0, 10), anchor="w")
-        ttk.Label(self.content_frame, text=texts.get("info_dev_text", ""), justify=LEFT).pack(fill=X, anchor="w")
+        ttk.Label(inner_content_frame, text=texts.get("info_dev_title", "Information"), font="-size 14 -weight bold").pack(fill=X, pady=(0, 10), anchor="w")
+        ttk.Label(inner_content_frame, text=texts.get("info_dev_text", ""), justify=LEFT).pack(fill=X, anchor="w")
 
     def _load_and_resize_banner(self, event_width=None):
         try:
             if not PIL_AVAILABLE: raise FileNotFoundError
-            image_path = os.path.join('resource', 'copy_jikiller.png')
+            image_path = resource_path(os.path.join('resource', 'copy_jikiller.png'))
             self.original_image = Image.open(image_path)
             
-            max_width = (event_width or self.winfo_width()) - 80 
-            if max_width <= 0: return 
+            max_width = (event_width or self.canvas.winfo_width()) - 50 
+            if max_width <= 20: return 
             aspect_ratio = self.original_image.height / self.original_image.width
             new_width = max_width
             new_height = int(new_width * aspect_ratio)
@@ -171,27 +183,22 @@ class InfoWindow(tk.Toplevel):
             print(f"Error processing banner image: {e}")
             self.banner_label.config(text="COPY_JIKILLER", font="-size 18 -weight bold")
 
-    def _on_resize_banner(self, event):
+    def _on_resize(self, event):
+        self.canvas.itemconfig(self.canvas_frame_id, width=event.width)
         self._load_and_resize_banner(event.width)
+        
     def _on_mouse_wheel(self, event):
         if sys.platform == "darwin": delta = event.delta
         else: delta = int(-1*(event.delta/120))
         self.canvas.yview_scroll(delta, "units")
+        
     def _on_destroy(self, event):
         if event.widget == self:
-            self.canvas.unbind_all("<MouseWheel>")
+            self.unbind_all("<MouseWheel>")
 
-class CustomMessagebox(tk.Toplevel):
+class CustomMessagebox(BaseToplevel):
     def __init__(self, parent, texts, message, title_key="dialog_info_title", bootstyle="info", alert=False):
-        super().__init__(parent)
-        self.title(texts.get(title_key, "Info"))
-        self.transient(parent)
-        self.grab_set()
-
-        try:
-            self.iconbitmap(os.path.join('resource', 'copy_jikiller.ico'))
-        except tk.TclError:
-            pass
+        super().__init__(parent, texts.get(title_key, "Info"))
 
         if alert: self.bell()
 
@@ -224,20 +231,12 @@ class CustomMessagebox(tk.Toplevel):
         y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
         self.geometry(f"+{x}+{y}")
 
-class AddExtensionDialog(tk.Toplevel):
+class AddExtensionDialog(BaseToplevel):
     def __init__(self, parent, texts):
-        super().__init__(parent)
-        self.title(texts.get("dialog_add_ext_title", "Add Extension"))
-        self.transient(parent)
-        self.grab_set()
+        super().__init__(parent, texts.get("dialog_add_ext_title", "Add Extension"))
         self.result = None
         self.texts = texts
 
-        try:
-            self.iconbitmap(os.path.join('resource', 'copy_jikiller.ico'))
-        except tk.TclError:
-            pass
-            
         main_frame = ttk.Frame(self, padding=20)
         main_frame.pack(fill=X)
         
@@ -273,19 +272,11 @@ class AddExtensionDialog(tk.Toplevel):
         y = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
         self.geometry(f"+{x}+{y}")
 
-class ManageExtensionsDialog(tk.Toplevel):
+class ManageExtensionsDialog(BaseToplevel):
     def __init__(self, parent, texts, extension_vars):
-        super().__init__(parent)
-        self.title(texts.get("dialog_manage_ext_title", "Manage Extensions"))
-        self.transient(parent)
-        self.grab_set()
+        super().__init__(parent, texts.get("dialog_manage_ext_title", "Manage Extensions"))
         self.deleted_extensions = []
         
-        try:
-            self.iconbitmap(os.path.join('resource', 'copy_jikiller.ico'))
-        except tk.TclError:
-            pass
-            
         self.default_extensions = {".py", ".c", ".cpp", ".java"}
         
         main_frame = ttk.Frame(self, padding=20)

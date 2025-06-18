@@ -65,9 +65,9 @@ LANGUAGES = {
         "info_usage_title": "How to Use",
         "info_usage_text": "1.  📁 Select Folder: Choose the folder containing the code files.\n\n2.  ⚙️ Analysis Settings:\n    • Analysis Mode: Select the mode matching the language for best accuracy.\n    • Include Subfolders: Check to scan all subdirectories.\n\n3.  🔍 Filtering:\n    • Extensions: Manage the file types to be included in the scan.\n    • Similarity Threshold: Set the minimum similarity to display.\n\n4.  ✔️ Start Scan: Begin the analysis after setup.\n\n5.  Results: Double-click an item to open the side-by-side comparison.\n\n6.  💾 Export: Save the current results to a CSV file.",
         "info_ast_title": "What is AST Analysis?",
-        "info_ast_text": "AST stands for 'Abstract Syntax Tree'. It represents the code's grammatical structure, ignoring superficial differences like variable names, comments, or spacing. This allows COPY_JIKILLER to effectively detect plagiarism even when attempts are made to hide it.",
+        "info_ast_text": "AST stands for 'Abstract Syntax Tree'. It represents the code's grammatical structure, ignoring superficial differences like variable names, comments, or spacing. This allows COPY_JIKILLER to effectively detect plagiarism even when attempts are made to hide in it.",
         "info_dev_title": "Information",
-        "info_dev_text": "Developer: JIK\nAffiliation: M.S. Student at STLAB, Kyungpook National University & Member of Altruistic Hive\nLicense: MIT License\n\nThis program was developed with the hope of being a small help for coding tests, reducing the workload of professors and TAs, and contributing to student education.",
+        "info_dev_text": "Developer: JIK\nAffiliation: M.S. Student at STLAB, Kyungpook National University\n& Member of Altruistic Hive\n\nLicense: MIT License\n\nThis program was developed with the hope of being a small help \nfor coding tests, reducing the workload of professors and TAs, \nand contributing to student education.",
         
         # --- Treeview Headers ---
         "tree_file1": "File 1",
@@ -135,7 +135,7 @@ LANGUAGES = {
         "info_ast_title": "AST 분석이란?",
         "info_ast_text": "AST는 '추상 구문 트리'의 약자입니다. 코드를 단순히 글자의 나열로 보지 않고, 컴파일러처럼 문법 구조를 파악하여 비교합니다. 이를 통해 변수명 변경, 코드 순서 변경 등에도 정확한 분석이 가능합니다.",
         "info_dev_title": "정보",
-        "info_dev_text": "개발자: JIK\n소속: 경북대학교 STLAB 석사과정 & Altruistic Hive\n라이선스: MIT License\n\n이 프로그램은 코딩 테스트 및 교수님, TA들의 노고와 학생들의 교육에 조금이나마 도움이 됐으면 하는 마음에서 개발되었습니다.",
+        "info_dev_text": "개발자: JIK\n소속: 경북대학교 STLAB 석사과정 & Altruistic Hive\n\n라이선스: MIT License\n\n이 프로그램은 코딩 테스트 및 교수님, \nTA들의 노고와 학생들의 교육에 조금이나마 도움이 \n됐으면 하는 마음에서 개발되었습니다.",
         
         # --- 결과 목록 헤더 ---
         "tree_file1": "파일 1",
